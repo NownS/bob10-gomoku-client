@@ -1,7 +1,6 @@
 from socket import *
 from typing import Tuple
 import sys
-print = sys.stdout.write
 
 class Gomoku:
 

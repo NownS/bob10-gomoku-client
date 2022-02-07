@@ -168,6 +168,17 @@
    </property>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>textBrowser_log</tabstop>
+  <tabstop>lineEdit_addr</tabstop>
+  <tabstop>lineEdit_port</tabstop>
+  <tabstop>pushButton_connect</tabstop>
+  <tabstop>pushButton_ready</tabstop>
+  <tabstop>pushButton_play</tabstop>
+  <tabstop>lineEdit_x</tabstop>
+  <tabstop>lineEdit_y</tabstop>
+  <tabstop>pushButton_put</tabstop>
+ </tabstops>
  <resources>
   <include location="resource/resource.qrc"/>
  </resources>
