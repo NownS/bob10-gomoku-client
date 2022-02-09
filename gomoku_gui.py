@@ -31,11 +31,13 @@ class Communicator(QThread):
     gomoku = None
     string = "before"
 
+
     def __init__(self, command):
         super().__init__()
         self.running = True
         self.command = command
         self.generator = None
+
 
     def run(self):
         if self.command == "CONNECT":
@@ -89,20 +91,9 @@ class Communicator(QThread):
                     break
 
 
-
-        elif self.command == "UPDATE":
-            pass
-
-        elif self.command == "PUT":
-            pass
-
-        elif self.command == "END":
-            pass
-
-            
-
     def resume(self):
         self.running = True
+
 
     def pause(self):
         self.running = False
