@@ -5,20 +5,14 @@ from PyQt5.QtWidgets import *
 from PyQt5 import uic, QtGui
 from gomoku_lib import Gomoku
 from PyQt5.QtCore import *
+import numpy as np
+from generator import Generator
 
 form_class = uic.loadUiType("gomoku.ui")[0]
 
 
-gomoku_map = [[-1 for i in range(15)] for i in range(15)]
+gomoku_map = np.array([[-1 for _ in range(15)] for _ in range(15)])
 my_color = 0
-
-
-def gen_xy():                           # generate x,y algorithm
-    while True:
-        x = randint(0, 14)
-        y = randint(0, 14)
-        if gomoku_map[x][y] == -1:
-            return x, y
 
 
 class MySignal(QObject):
@@ -41,6 +35,7 @@ class Communicator(QThread):
         super().__init__()
         self.running = True
         self.command = command
+        self.generator = None
 
     def run(self):
         if self.command == "CONNECT":
@@ -66,8 +61,10 @@ class Communicator(QThread):
                     gomoku_map[x-1][y-1] = int(not my_color)
                     self.mysignal.updateOther.emit((x, y))
 
+            self.generator = Generator(my_color, gomoku_map)
+            
             while True:
-                x, y = gen_xy()
+                x, y = Generator.gen_xy()
                 self.gomoku.put(x+1, y+1)
                 success, cmd, turn, data = self.gomoku.update_or_end()
                 if cmd == 2:
