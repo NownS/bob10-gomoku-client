@@ -83,7 +83,6 @@ class Generator:
         four_8 = ['10111','11011','11101']
         four_10 = ['11110','01111']
         four_50 =  '011110'
-        six = "111111"
 
         weight = 0
         three_count = 0
@@ -131,11 +130,11 @@ class Generator:
 
             for three in three_6:
                 if three in check_pattern and (not ('11101' in check_pattern)) and (not ('10111' in check_pattern)):
-                    weight += 6
+                    weight += 8
                     three_count += 1
 
             if three_8 in check_pattern and (not ('11101' in check_pattern)) and (not ('10111' in check_pattern)):
-                weight += 8
+                weight += 10
                 three_count += 1
             
             if three_8 in check_pattern:
@@ -149,6 +148,8 @@ class Generator:
                 else:
                     if '111111' in check_pattern:
                         continue
+                    else:
+                        return 10000
 
             if four_50 in check_pattern:
                 weight += 50
@@ -166,14 +167,14 @@ class Generator:
 
             for four in four_8:
                 if four in check_pattern:
-                    weight += 8
+                    weight += 20
                     four_count += 1
                     if four_count + three_count > 1:
                         weight += 150
 
             for four in four_10:
                 if four in check_pattern:
-                    weight += 10
+                    weight += 30
                     four_count += 1
                     if four_count + three_count > 1:
                         weight += 150
