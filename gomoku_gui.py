@@ -13,6 +13,7 @@ form_class = uic.loadUiType("gomoku.ui")[0]
 
 gomoku_map = np.array([[-1 for _ in range(15)] for _ in range(15)])
 my_color = 0
+player_color = 1
 
 
 class MySignal(QObject):
@@ -66,11 +67,12 @@ class Communicator(QThread):
             self.generator = Generator(my_color, gomoku_map)
             
             while True:
-                x, y = Generator.gen_xy()
+                x, y = self.generator.gen_xy(my_color)
                 self.gomoku.put(x+1, y+1)
                 success, cmd, turn, data = self.gomoku.update_or_end()
                 if cmd == 2:
                     gomoku_map[x][y] = my_color
+                    self.generator.map[x][y] = my_color
                     self.mysignal.updateMine.emit((x+1, y+1))
 
                 else:
@@ -84,6 +86,7 @@ class Communicator(QThread):
                     x = int(data >> 4)
                     y = int(data & 0b00001111)
                     gomoku_map[x-1][y-1] = int(not my_color)
+                    self.generator.map[x-1][y-1] = int(not my_color)
                     self.mysignal.updateOther.emit((x, y))
 
                 else:
@@ -113,6 +116,10 @@ class WindowClass(QMainWindow, form_class) :
         Communicator.mysignal.updateOther.connect(self.updateOtherFunction)
         Communicator.mysignal.updateMine.connect(self.updateMineFunction)
         Communicator.mysignal.end.connect(self.endFunction)
+
+        self.radioButton_black.clicked.connect(self.btnRadioFunction)
+        self.radioButton_white.clicked.connect(self.btnRadioFunction)
+        self.radioButton_white.setChecked(True)
 
         self.addr = ""
         self.port = 0
@@ -226,6 +233,26 @@ class WindowClass(QMainWindow, form_class) :
             self.textBrowser_log.append("Win! ({})".format(result))
         elif turn == 0:
             self.textBrowser_log.append("Lose! ({})".format(result))
+
+
+    def btnRadioFunction(self):
+        global my_color, player_color
+
+        if self.radioButton_black.isChecked() : 
+            my_color = 1
+            player_color = 0
+
+        elif self.radioButton_white.isChecked() : 
+            my_color = 0
+            player_color = 1
+
+
+    def btnPlayFunction(self):
+        pass
+
+
+    def btnPutFunction(self):
+        pass
 
 
     def addStone(self, x, y, color):

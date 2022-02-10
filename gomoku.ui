@@ -167,6 +167,45 @@
     <pixmap resource="resource/resource.qrc">:/bg/board.jpg</pixmap>
    </property>
   </widget>
+  <widget class="QRadioButton" name="radioButton_black">
+   <property name="geometry">
+    <rect>
+     <x>780</x>
+     <y>540</y>
+     <width>61</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Black</string>
+   </property>
+  </widget>
+  <widget class="QRadioButton" name="radioButton_white">
+   <property name="geometry">
+    <rect>
+     <x>860</x>
+     <y>540</y>
+     <width>61</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>White</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>670</x>
+     <y>540</y>
+     <width>91</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Set User Color</string>
+   </property>
+  </widget>
  </widget>
  <tabstops>
   <tabstop>textBrowser_log</tabstop>
@@ -174,6 +213,8 @@
   <tabstop>lineEdit_port</tabstop>
   <tabstop>pushButton_connect</tabstop>
   <tabstop>pushButton_ready</tabstop>
+  <tabstop>radioButton_black</tabstop>
+  <tabstop>radioButton_white</tabstop>
   <tabstop>pushButton_play</tabstop>
   <tabstop>lineEdit_x</tabstop>
   <tabstop>lineEdit_y</tabstop>
