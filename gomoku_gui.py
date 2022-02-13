@@ -130,6 +130,17 @@ class WindowClass(QMainWindow, form_class) :
         self.stoneLabels = []
         self.color_dict = {0: "black", 1: "white"}
 
+        
+        self.label_green.setHidden(True)
+        self.label_color.setHidden(False)
+        self.label_black.setHidden(True)
+        self.label_white.setHidden(True)
+
+        
+        self.label_color_your.setHidden(False)
+        self.label_black_your.setHidden(True)
+        self.label_white_your.setHidden(True)
+
 
     @pyqtSlot()
     def on_finished(self):
@@ -148,6 +159,12 @@ class WindowClass(QMainWindow, form_class) :
             self.pushButton_connect.setEnabled(False)
             self.lineEdit_addr.setEnabled(False)
             self.lineEdit_port.setEnabled(False)
+            self.radioButton_black.setEnabled(False)
+            self.radioButton_white.setEnabled(False)
+            self.pushButton_play.setEnabled(False)
+            self.pushButton_put.setEnabled(False)
+            self.lineEdit_x.setEnabled(False)
+            self.lineEdit_y.setEnabled(False)
             connect_communicator = Communicator("CONNECT")
             connect_communicator.finished.connect(self.on_finished)
             connect_communicator.start()
@@ -163,6 +180,12 @@ class WindowClass(QMainWindow, form_class) :
             self.pushButton_connect.setEnabled(True)
             self.lineEdit_addr.setEnabled(True)
             self.lineEdit_port.setEnabled(True)
+            self.radioButton_black.setEnabled(True)
+            self.radioButton_white.setEnabled(True)
+            self.pushButton_play.setEnabled(True)
+            self.pushButton_put.setEnabled(True)
+            self.lineEdit_x.setEnabled(True)
+            self.lineEdit_y.setEnabled(True)
 
         self.textBrowser_log.append("Connection status: " + str(connection))
 
@@ -182,6 +205,7 @@ class WindowClass(QMainWindow, form_class) :
         
         self.textBrowser_log.append("Ready status: " + str(status))
         self.ready = True
+        self.label_black.setHidden(False)
 
         
     @pyqtSlot(tuple)
@@ -193,12 +217,14 @@ class WindowClass(QMainWindow, form_class) :
             my_color = 0
             self.textBrowser_log.append("You are " + self.color_dict[self.color])
             self.textBrowser_log.append("Your turn")
+            self.label_black_your.setHidden(False)
         else:
             self.color = 1
             my_color = 1
             self.textBrowser_log.append("You are " + self.color_dict[self.color])
             self.textBrowser_log.append("Other's turn")
-        
+            self.label_white_your.setHidden(False)
+             
     
     @pyqtSlot(tuple)
     def updateOtherFunction(self, pos):
@@ -260,6 +286,12 @@ class WindowClass(QMainWindow, form_class) :
         label.setPixmap(QtGui.QPixmap(":/icon/" + color + ".png"))
         label.setGeometry(int((587 * x - 349) / 14), int((293 * y - 104) / 7), 40, 40)
         label.setVisible(True)
+        self.label_green.setHidden(False)
+        self.label_color.setHidden(False)
+        self.label_green.setGeometry(int((587 * x - 349) / 14) + 10, int((293 * y - 104) / 7) + 10, 20, 20)
+        self.label_green.raise_()
+        self.label_black.setHidden(color == "black")
+        self.label_white.setHidden(color == "white")
         
     
 
