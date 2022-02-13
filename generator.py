@@ -130,11 +130,11 @@ class Generator:
 
             for three in three_6:
                 if three in check_pattern and (not ('11101' in check_pattern)) and (not ('10111' in check_pattern)):
-                    weight += 8
+                    weight += 6
                     three_count += 1
 
             if three_8 in check_pattern and (not ('11101' in check_pattern)) and (not ('10111' in check_pattern)):
-                weight += 10
+                weight += 8
                 three_count += 1
             
             if three_8 in check_pattern:
@@ -167,14 +167,14 @@ class Generator:
 
             for four in four_8:
                 if four in check_pattern:
-                    weight += 20
+                    weight += 8
                     four_count += 1
                     if four_count + three_count > 1:
                         weight += 150
 
             for four in four_10:
                 if four in check_pattern:
-                    weight += 30
+                    weight += 10
                     four_count += 1
                     if four_count + three_count > 1:
                         weight += 150
