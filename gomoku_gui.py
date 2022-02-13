@@ -1,3 +1,4 @@
+from itertools import starmap
 from random import randint
 import sys
 from time import sleep
@@ -24,14 +25,14 @@ class MySignal(QObject):
     updateOther = pyqtSignal(tuple)
     updateMine = pyqtSignal(tuple)
     end = pyqtSignal(tuple)
-    
+    time_start = pyqtSignal()
+    time_stop = pyqtSignal()
+
 
 class Communicator(QThread):
 
     mysignal = MySignal()
     gomoku = None
-    string = "before"
-
 
     def __init__(self, command):
         super().__init__()
@@ -55,6 +56,7 @@ class Communicator(QThread):
             global my_color
 
             if turn == 1:
+                self.mysignal.time_start.emit()
                 my_color = 1
                 success, cmd, turn, data = self.gomoku.update_or_end()
                 if cmd == 2:
@@ -63,10 +65,13 @@ class Communicator(QThread):
                     y = int(data & 0b00001111)
                     gomoku_map[x-1][y-1] = int(not my_color)
                     self.mysignal.updateOther.emit((x, y))
+                    self.mysignal.time_stop.emit()
+            
 
             self.generator = Generator(my_color, gomoku_map)
             
             while True:
+                self.mysignal.time_start.emit()
                 x, y = self.generator.gen_xy(my_color)
                 self.gomoku.put(x+1, y+1)
                 success, cmd, turn, data = self.gomoku.update_or_end()
@@ -74,11 +79,14 @@ class Communicator(QThread):
                     gomoku_map[x][y] = my_color
                     self.generator.map[x][y] = my_color
                     self.mysignal.updateMine.emit((x+1, y+1))
+                    self.mysignal.time_stop.emit()
 
                 else:
                     self.mysignal.end.emit((turn, int(data)))
+                    self.mysignal.time_stop.emit()
                     break
                 
+                self.mysignal.time_start.emit()
                 success, cmd, turn, data = self.gomoku.update_or_end()
                 
                 if cmd == 2:
@@ -88,9 +96,11 @@ class Communicator(QThread):
                     gomoku_map[x-1][y-1] = int(not my_color)
                     self.generator.map[x-1][y-1] = int(not my_color)
                     self.mysignal.updateOther.emit((x, y))
+                    self.mysignal.time_stop.emit()
 
                 else:
                     self.mysignal.end.emit((turn, int(data)))
+                    self.mysignal.time_stop.emit()
                     break
 
 
@@ -130,16 +140,40 @@ class WindowClass(QMainWindow, form_class) :
         self.stoneLabels = []
         self.color_dict = {0: "black", 1: "white"}
 
-        
         self.label_green.setHidden(True)
         self.label_color.setHidden(False)
         self.label_black.setHidden(True)
         self.label_white.setHidden(True)
 
-        
         self.label_color_your.setHidden(False)
         self.label_black_your.setHidden(True)
         self.label_white_your.setHidden(True)
+
+        self.timer = QTimer(self)
+        self.timer.setInterval(50)
+        self.timer.timeout.connect(self.timeout)
+        self.time = None
+        Communicator.mysignal.time_stop.connect(self.timer_stop)
+        Communicator.mysignal.time_start.connect(self.timer_start)
+
+
+    @pyqtSlot()
+    def timer_start(self):
+        self.time = QTime.currentTime()
+        self.timer.start()
+
+    
+    @pyqtSlot()
+    def timer_stop(self):
+        self.timer.stop()
+
+    
+    def timeout(self):
+        sender = self.sender()
+        interval = QTime.currentTime().secsTo(self.time) + 15
+
+        if id(sender) == id(self.timer):
+            self.label_time.setText(str(interval))
 
 
     @pyqtSlot()
@@ -210,6 +244,8 @@ class WindowClass(QMainWindow, form_class) :
         
     @pyqtSlot(tuple)
     def updateAfterReadyFunction(self, ret):
+        self.timer_start()
+
         turn, data = ret
         global my_color
         if turn == 0:
@@ -224,10 +260,13 @@ class WindowClass(QMainWindow, form_class) :
             self.textBrowser_log.append("You are " + self.color_dict[self.color])
             self.textBrowser_log.append("Other's turn")
             self.label_white_your.setHidden(False)
+        
              
     
     @pyqtSlot(tuple)
     def updateOtherFunction(self, pos):
+        self.timer_start()
+
         x, y = pos
         self.addStone(x, y, self.color_dict[int(not self.color)])
         self.textBrowser_log.append("Other put at " + str(x) + ", " + str(y))
@@ -235,6 +274,8 @@ class WindowClass(QMainWindow, form_class) :
 
     @pyqtSlot(tuple)
     def updateMineFunction(self, pos):
+        self.timer_start()
+
         x, y = pos
         self.addStone(x, y, self.color_dict[self.color])
         self.textBrowser_log.append("You put at" + str(x) + ", " + str(y))
