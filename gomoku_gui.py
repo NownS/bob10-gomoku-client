@@ -25,8 +25,14 @@ class MySignal(QObject):
     updateOther = pyqtSignal(tuple)
     updateMine = pyqtSignal(tuple)
     end = pyqtSignal(tuple)
+
     time_start = pyqtSignal()
     time_stop = pyqtSignal()
+
+    someone_end = pyqtSignal(tuple)
+
+    add_stone = pyqtSignal(int, int, str)
+    finish = pyqtSignal()
 
 
 class Communicator(QThread):
@@ -113,6 +119,9 @@ class Communicator(QThread):
 
 
 class WindowClass(QMainWindow, form_class) :
+    
+    mysignal = MySignal()
+    
     def __init__(self) :
         super().__init__()
         self.setupUi(self)
@@ -157,6 +166,20 @@ class WindowClass(QMainWindow, form_class) :
         Communicator.mysignal.time_start.connect(self.timer_start)
 
 
+
+        self.pushButton_play.clicked.connect(self.btnPlayFunction)
+        self.pushButton_put.clicked.connect(self.btnPutFunction)
+        self.computer = None
+        ComputerPlayer.mysignal.add_stone.connect(self.addStone)
+        ComputerPlayer.mysignal.finish.connect(self.btnPutActiveFunction)
+        ComputerPlayer.mysignal.someone_end.connect(self.someoneEnd)
+        self.mysignal.someone_end.connect(self.someoneEnd)
+        self.turn = 0
+        self.isMulti = True
+        self.mysignal.time_stop.connect(self.timer_stop)
+        self.mysignal.time_start.connect(self.timer_start)
+
+
     @pyqtSlot()
     def timer_start(self):
         self.time = QTime.currentTime()
@@ -174,6 +197,8 @@ class WindowClass(QMainWindow, form_class) :
 
         if id(sender) == id(self.timer):
             self.label_time.setText(str(interval))
+            if interval <= 0 and not self.isMulti:
+                self.mysignal.someone_end.emit((3, self.turn))
 
 
     @pyqtSlot()
@@ -315,13 +340,88 @@ class WindowClass(QMainWindow, form_class) :
 
 
     def btnPlayFunction(self):
-        pass
+        self.isMulti = False
+        self.radioButton_black.setEnabled(False)
+        self.radioButton_white.setEnabled(False)
+        self.pushButton_play.setEnabled(False)
+        self.pushButton_connect.setEnabled(False)
+        self.pushButton_ready.setEnabled(False)
+        self.lineEdit_addr.setEnabled(False)
+        self.lineEdit_port.setEnabled(False)
+        self.textBrowser_log.append("Solo Play Start")
+        self.computer = ComputerPlayer()
+        
+        self.mysignal.time_start.emit()
+
+        self.label_black.setHidden(False)
+        
+        if not my_color:
+            self.label_white_your.setHidden(False)
+            self.computer.start()
+            self.turn = 1
+            sleep(0.1)
+        else:
+            self.label_black_your.setHidden(False)
 
 
     def btnPutFunction(self):
-        pass
+        self.mysignal.time_stop.emit()
+        self.pushButton_put.setEnabled(False)
+        self.lineEdit_x.setEnabled(False)
+        self.lineEdit_y.setEnabled(False)
+        self.computer.args[0] = int(self.lineEdit_x.text())
+        self.computer.args[1] = int(self.lineEdit_y.text())
+        self.mysignal.time_start.emit()
+        self.computer.start()
+        self.turn = 1
+        sleep(0.1)
 
 
+    @pyqtSlot()
+    def btnPutActiveFunction(self):
+        self.mysignal.time_stop.emit()
+        self.pushButton_put.setEnabled(True)
+        self.lineEdit_x.setEnabled(True)
+        self.lineEdit_y.setEnabled(True)
+        self.turn = 0
+        self.mysignal.time_start.emit()
+
+
+    @pyqtSlot(tuple)
+    def someoneEnd(self, data):
+        ret, stone = data
+        if ret == 1:
+            if stone == my_color:
+                self.textBrowser_log.append("You Win By Error")
+                self.mysignal.time_stop.emit()
+            else:
+                self.textBrowser_log.append("You Lose By Error")
+                self.mysignal.time_stop.emit()
+        elif ret == 2:
+            if stone == my_color:
+                self.textBrowser_log.append("You Lose By Connect5")
+                self.mysignal.time_stop.emit()
+            else:
+                self.textBrowser_log.append("You Win By Connect5")
+                self.mysignal.time_stop.emit()
+        else:
+            
+            self.pushButton_put.setEnabled(False)
+            self.lineEdit_x.setEnabled(False)
+            self.lineEdit_y.setEnabled(False)
+            
+            if stone:
+                self.textBrowser_log.append("You Win By Time-Over")
+                self.computer.terminate()
+                self.mysignal.time_stop.emit()
+                
+            else:
+                self.textBrowser_log.append("You Lose By Time-Over")
+                self.mysignal.time_stop.emit()
+
+
+
+    @pyqtSlot(int, int, str)
     def addStone(self, x, y, color):
         label = QLabel(self)
         label.setPixmap(QtGui.QPixmap(":/icon/" + color + ".png"))
@@ -334,7 +434,232 @@ class WindowClass(QMainWindow, form_class) :
         self.label_black.setHidden(color == "black")
         self.label_white.setHidden(color == "white")
         
+
+def column(matrix, i):
+    ret = []
+    for row in matrix:
+        ret.append(row[i])
+    return ret
+
+
+def diagonal(matrix, x, y):
+    diag1 = []
+    diag2 = []
+
+    x_iter, y_iter = x, y
+    while (x_iter > 0 and y_iter > 0):
+        x_iter -= 1
+        y_iter -= 1
+    while (x_iter < 15 and y_iter < 15):
+        diag1.append(matrix[x_iter][y_iter])
+        x_iter += 1
+        y_iter += 1
     
+    x_iter, y_iter = x, y
+    while (x_iter > 0 and y_iter < 14):
+        x_iter -= 1
+        y_iter += 1
+    while (x_iter < 15 and y_iter > -1):
+        diag2.append(matrix[x_iter][y_iter])
+        x_iter += 1
+        y_iter -= 1
+    
+    return diag1, diag2
+
+
+def find_cannot_place(x_idx, y_idx, color_id):
+    if color_id == 0:
+        
+        ROW, COL, DIAG_1, DIAG_2 = 0, 1, 2, 3
+
+        last_point = [[] for _ in range(4)]
+
+        len_stone = [-1 for _ in range(4)]
+
+        i, j = x_idx, y_idx
+        while -1 < i < 15 and gomoku_map[i][j] == color_id:
+            len_stone[ROW] += 1
+            i -= 1
+        last_point[ROW].append((i, j))
+
+        i, j = x_idx, y_idx
+        while -1 < i < 15 and gomoku_map[i][j] == color_id:
+            len_stone[ROW] += 1
+            i += 1
+        last_point[ROW].append((i, j))
+        
+        i, j = x_idx, y_idx
+        while -1 < j < 15 and gomoku_map[i][j] == color_id:
+            len_stone[COL] += 1
+            j -= 1
+        last_point[COL].append((i, j))
+
+        i, j = x_idx, y_idx
+        while -1 < j < 15 and gomoku_map[i][j] == color_id:
+            len_stone[COL] += 1
+            j += 1
+        last_point[COL].append((i, j))
+        
+        i, j = x_idx, y_idx
+        while -1 < j < 15 and -1 < i < 15 and gomoku_map[i][j] == color_id:
+            len_stone[DIAG_1] += 1
+            j -= 1
+            i -= 1
+        last_point[DIAG_1].append((i,j))
+        
+        i, j = x_idx, y_idx
+        while -1 < j < 15 and -1 < i < 15 and gomoku_map[i][j] == color_id:
+            len_stone[DIAG_1] += 1
+            j += 1
+            i += 1
+        last_point[DIAG_1].append((i,j))
+        
+        i, j = x_idx, y_idx
+        while -1 < j < 15 and -1 < i < 15 and gomoku_map[i][j] == color_id:
+            len_stone[DIAG_2] += 1
+            j += 1
+            i -= 1
+        last_point[DIAG_2].append((i,j))
+        
+        i, j = x_idx, y_idx
+        while -1 < j < 15 and -1 < i < 15 and gomoku_map[i][j] == color_id:
+            len_stone[DIAG_2] += 1
+            j -= 1
+            i += 1
+        last_point[DIAG_2].append((i,j))
+
+        check_3_idx = []
+        check_4_idx = []
+
+        for idx in range(4):
+            if len_stone[idx] == 3:
+                check_3_idx.append(idx)
+            elif len_stone[idx] == 4:
+                check_4_idx.append(idx)
+        
+        if len(check_3_idx) >= 2:
+            count_3 = 0
+            for idx in check_3_idx:
+                blocked = False
+                for x, y in last_point[idx]:
+                    if 0 <= x <= 14 and 0 <= y <= 14 and gomoku_map[x][y] == -1:
+                        continue
+                    else:
+                        blocked = True
+                        break
+                if not blocked:
+                    count_3 += 1
+
+            if count_3 >= 2:
+                return True
+
+        if len(check_4_idx) >= 2:
+            count_4 = 0
+            for idx in check_4_idx:
+                blocked = False
+                for x, y in last_point[idx]:
+                    if 0 <= x <= 14 and 0 <= y <= 14 and gomoku_map[x][y] == -1:
+                        continue
+                    else:
+                        blocked = True
+                        break
+                if not blocked:
+                    count_4 += 1
+            
+            if count_4 >= 2:
+                return True
+
+    return False
+
+
+def someone_win(x_idx, y_idx, color_id):
+    row = gomoku_map[x_idx]
+    col = column(gomoku_map, y_idx)
+    diag = diagonal(gomoku_map, x_idx, y_idx)
+
+    for candidate in [row, col, *diag]:
+        length = 0
+        length_list = []
+        for i in range(len(candidate)):
+            if candidate[i] == color_id:
+                length += 1
+            else:
+                length_list.append(length)
+                length = 0
+        
+        if color_id == 0:
+            try:
+                id = length_list.index(5)
+                return True
+            except ValueError:
+                continue
+        else:
+            if length_list and max(length_list) >= 5:
+                return True
+
+    return False
+
+
+class ComputerPlayer(QThread):
+
+    mysignal = MySignal()
+
+    def __init__(self):
+        super().__init__()
+        self.generator = Generator(my_color, gomoku_map)
+        self.color_str = ["black", "white"]
+        self.args = [0, 0, 0]
+
+    
+    def run(self):
+        player_x, player_y, turn = self.args
+        if turn or not player_color:
+            ret = self.check(player_color, player_x, player_y)
+            self.args[2] += 1
+            if not ret:
+                self.generator.map[player_x-1][player_y-1] = player_color
+                self.mysignal.add_stone.emit(player_x, player_y, self.color_str[player_color])
+            else:
+                if ret == 2:
+                    self.mysignal.add_stone.emit(player_x, player_y, self.color_str[player_color])
+                self.mysignal.someone_end.emit((ret, player_color))
+                return
+        
+        
+        x, y = self.generator.gen_xy(my_color)
+        
+        ret = self.check(my_color, x+1, y+1)
+        self.args[2] += 1
+        if not ret:
+            self.generator.map[x][y] = my_color
+            self.mysignal.add_stone.emit(x+1, y+1, self.color_str[my_color])
+        else:
+            if ret == 2:
+                self.mysignal.add_stone.emit(x+1, y+1, self.color_str[my_color])
+            self.mysignal.someone_end.emit((ret, my_color))
+            return
+        self.mysignal.finish.emit()
+        
+
+    def check(self, color_id, x, y):
+        x_idx = x-1
+        y_idx = y-1
+
+        if not(0 < x < 16 and 0 < y < 16) :
+            return 1
+
+        if gomoku_map[x_idx][y_idx] != -1:
+            return 1
+
+        gomoku_map[x_idx][y_idx] = color_id
+
+        if find_cannot_place(x_idx, y_idx, color_id):
+            return 1
+
+        if someone_win(x_idx, y_idx, color_id):
+            return 2
+        
+        return 0
 
 
 if __name__ == "__main__" :
