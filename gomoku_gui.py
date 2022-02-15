@@ -34,6 +34,8 @@ class MySignal(QObject):
     add_stone = pyqtSignal(int, int, str)
     finish = pyqtSignal()
 
+    put = pyqtSignal(tuple)
+
 
 class Communicator(QThread):
 
@@ -178,6 +180,19 @@ class WindowClass(QMainWindow, form_class) :
         self.isMulti = True
         self.mysignal.time_stop.connect(self.timer_stop)
         self.mysignal.time_start.connect(self.timer_start)
+
+        self.mysignal.put.connect(self.putFunction)
+
+        self.label_bg.mousePressEvent = self.clickPos
+        self.playerTurn = False
+
+    def clickPos(self, event):
+        x = event.pos().x()
+        y = event.pos().y()
+        if self.playerTurn:
+            x = int((x + 32) / 40)
+            y = int((y + 32) / 40)
+            self.mysignal.put.emit((x, y))
 
 
     @pyqtSlot()
@@ -350,7 +365,6 @@ class WindowClass(QMainWindow, form_class) :
         self.lineEdit_port.setEnabled(False)
         self.textBrowser_log.append("Solo Play Start")
         self.computer = ComputerPlayer()
-        
         self.mysignal.time_start.emit()
 
         self.label_black.setHidden(False)
@@ -362,15 +376,24 @@ class WindowClass(QMainWindow, form_class) :
             sleep(0.1)
         else:
             self.label_black_your.setHidden(False)
+            self.playerTurn = True
 
 
     def btnPutFunction(self):
+        x = int(self.lineEdit_x.text())
+        y = int(self.lineEdit_y.text())
+        self.mysignal.put.emit((x, y))
+
+
+    @pyqtSlot(tuple)
+    def putFunction(self, data):
+        self.playerTurn = False
         self.mysignal.time_stop.emit()
         self.pushButton_put.setEnabled(False)
         self.lineEdit_x.setEnabled(False)
         self.lineEdit_y.setEnabled(False)
-        self.computer.args[0] = int(self.lineEdit_x.text())
-        self.computer.args[1] = int(self.lineEdit_y.text())
+        self.computer.args[0] = data[0]
+        self.computer.args[1] = data[1]
         self.mysignal.time_start.emit()
         self.computer.start()
         self.turn = 1
@@ -385,6 +408,7 @@ class WindowClass(QMainWindow, form_class) :
         self.lineEdit_y.setEnabled(True)
         self.turn = 0
         self.mysignal.time_start.emit()
+        self.playerTurn = True
 
 
     @pyqtSlot(tuple)
