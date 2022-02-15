@@ -445,6 +445,8 @@ class WindowClass(QMainWindow, form_class) :
             else:
                 self.textBrowser_log.append("You Lose By Time-Over")
                 self.mysignal.time_stop.emit()
+                
+        self.playerTurn = False
 
 
 
