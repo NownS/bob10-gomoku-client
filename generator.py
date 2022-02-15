@@ -67,14 +67,14 @@ class Generator:
                 
                 if my_weight >= 10000:
                     return x,y
-                elif your_weight >= 10000 and my_weight != -1:
+                elif your_weight >= 10000 and my_weight != 0:
                     your_weight = 10000
 
-                if max_weight < my_weight + your_weight and my_weight != -1:
+                if max_weight <= my_weight + your_weight and my_weight != 0:
                     max_weight = my_weight + your_weight
                     max_xy = [x,y]
 
-                if my_max_weight < my_weight and my_weight != -1:
+                if my_max_weight <= my_weight and my_weight != 0:
                     my_max_weight = my_weight
                     my_xy = [x,y]
 
