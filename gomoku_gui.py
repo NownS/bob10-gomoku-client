@@ -189,9 +189,12 @@ class WindowClass(QMainWindow, form_class) :
     def clickPos(self, event):
         x = event.pos().x()
         y = event.pos().y()
+        print("x, y", x, y)
+        x = int((x - 6) / 42 + 1)
+        y = int((y - 6) / 42 + 1)
+        print("x:", x)
+        print("y:", y)
         if self.playerTurn:
-            x = int((x + 32) / 40)
-            y = int((y + 32) / 40)
             self.mysignal.put.emit((x, y))
 
 
