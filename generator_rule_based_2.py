@@ -93,8 +93,9 @@ class Generator:
         if board[x][y] != -1 :
             return -1
 
-        two_1 = ['001010','010100','010010']
+        two_1 = ['01010']
         two_2 = ['01100', '00110']
+        three_2 = ['010101', '101010']
         three_6 = ['010110', '011010']
         three_8 = '01110'
         blocked_three = ['x11100', '00111x', 'x10110', 'x11010', '01101x', '01011x']
@@ -186,9 +187,12 @@ class Generator:
                     weight += 1
                     block_three_count += 1
 
+            if three in three_2:
+                weight += 2
+                two_count += 1
 
             for two in two_1:
-                if two in check_pattern:
+                if two in check_pattern and not ('010101' in check_pattern or '101010' in check_pattern):
                     weight += 1
                     two_count += 1
 
