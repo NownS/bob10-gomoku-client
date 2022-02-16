@@ -120,10 +120,12 @@ class Generator:
                 y_check += moves[i][1]
                 if x_check < 0 or x_check >= 15 or y_check < 0 or y_check >= 15:
                     check_pattern = 'x' + check_pattern
+                    break
 
                 check_xy = board[x_check][y_check]
                 if x_check < 0 or x_check >= 15 or y_check < 0 or y_check >= 15:
                     check_pattern = 'x' + check_pattern
+                    break
                 if check_xy == color:
                     check_pattern = '1' + check_pattern
                 elif check_xy == BLANK:
@@ -137,10 +139,12 @@ class Generator:
                 y_check -= moves[i][1]
                 if x_check < 0 or x_check >= 15 or y_check < 0 or y_check >= 15:
                     check_pattern = check_pattern + 'x'
+                    break
 
                 check_xy = board[x_check][y_check]
                 if x_check < 0 or x_check >= 15 or y_check < 0 or y_check >= 15:
                     check_pattern = check_pattern + 'x'
+                    break
                 if check_xy == color:
                     check_pattern = check_pattern + '1'
                 elif check_xy == BLANK:
