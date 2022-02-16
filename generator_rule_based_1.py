@@ -23,11 +23,11 @@ gomoku_default_weight_map_square = np.array([
         [0,1,2,2,2,2,2,2,2,2,2,2,2,1,0],
         [0,1,2,3,3,3,3,3,3,3,3,3,2,1,0],
         [0,1,2,3,4,4,4,4,4,4,4,3,2,1,0],
-        [0,1,2,3,4,5,4,5,4,3,4,3,2,1,0],
-        [0,1,2,3,4,5,5,6,5,4,4,3,2,1,0],
+        [0,1,2,3,4,5,5,5,5,5,4,3,2,1,0],
+        [0,1,2,3,4,5,6,6,6,5,4,3,2,1,0],
         [0,1,2,3,4,5,6,7,6,5,4,3,2,1,0],
-        [0,1,2,3,4,5,5,6,5,4,4,3,2,1,0],
-        [0,1,2,3,4,3,4,5,4,3,4,3,2,1,0],
+        [0,1,2,3,4,5,6,6,6,5,4,3,2,1,0],
+        [0,1,2,3,4,5,5,5,5,5,4,3,2,1,0],
         [0,1,2,3,4,4,4,4,4,4,4,3,2,1,0],
         [0,1,2,3,3,3,3,3,3,3,3,3,2,1,0],
         [0,1,2,2,2,2,2,2,2,2,2,2,2,1,0],
@@ -52,6 +52,10 @@ class Generator:
         self.color = color
 
 
+    def get_xy(self, my_color):
+        pass
+
+
     def gen_xy(self, my_color):                           # 위치별 가중치 가장 높은 위치 리턴
         
         global gomoku_weight_map
@@ -65,10 +69,10 @@ class Generator:
                 my_weight = self.calculate_weight(x, y, my_color) + gomoku_default_weight_map[x][y]
                 your_weight = self.calculate_weight(x, y, int(not my_color)) + gomoku_default_weight_map[x][y]
                 
-                if my_weight >= 10000:
+                if my_weight >= 2000:
                     return x,y
-                elif your_weight >= 10000 and my_weight >= 0:
-                    your_weight = 10000
+                elif your_weight >= 2000 and my_weight >= 0:
+                    your_weight = 2000
 
                 if max_weight <= my_weight + your_weight and my_weight >= 0:
                     max_weight = my_weight + your_weight
@@ -78,7 +82,7 @@ class Generator:
                     my_max_weight = my_weight
                     my_xy = [x,y]
 
-                if your_max_weight < your_weight:
+                if your_max_weight <= your_weight:
                     your_max_weight = your_weight
 
         if my_max_weight >= your_max_weight:
@@ -120,7 +124,7 @@ class Generator:
 
                 check_xy = board[x_check][y_check]
                 if x_check < 0 or x_check >= 15 or y_check < 0 or y_check >= 15:
-                        break
+                    break
                 if check_xy == color:
                     check_pattern = '1' + check_pattern
                 elif check_xy == BLANK:
@@ -137,7 +141,7 @@ class Generator:
 
                 check_xy = board[x_check][y_check]
                 if x_check < 0 or x_check >= 15 or y_check < 0 or y_check >= 15:
-                        break
+                    break
                 if check_xy == color:
                     check_pattern = check_pattern + '1'
                 elif check_xy == BLANK:
@@ -149,24 +153,29 @@ class Generator:
                 if three in check_pattern and (not ('11101' in check_pattern)) and (not ('10111' in check_pattern)):
                     weight += 6
                     three_count += 1
+                    if three_count >= 2:
+                        weight += 10
 
             if three_8 in check_pattern and (not ('11101' in check_pattern)) and (not ('10111' in check_pattern)):
                 weight += 8
                 three_count += 1
+                if three_count >= 2:
+                    weight += 10
             
             if three_8 in check_pattern:
                 open_three_count += 1
                 if open_three_count == 2 and color == BLACK:
                     return 0
+            
 
             if '11111' in check_pattern:
                 if color == WHITE:
-                    return 10000
+                    return 2000
                 else:
                     if '111111' in check_pattern:
                         continue
                     else:
-                        return 10000
+                        return 2000
 
             if four_50 in check_pattern:
                 weight += 50
