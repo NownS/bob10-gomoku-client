@@ -332,14 +332,17 @@ class WindowClass(QMainWindow, form_class) :
             result = "error"
         elif data == 1:
             result = "time out"
+        elif data == 2:
+            result = "draw"
         else:
             x = data >> 4
             y = data & 0b00001111
             result = "connect5 when put at {}, {}".format(x, y)
             color = int( not (self.color ^ turn))
             self.addStone(x, y, self.color_dict[color])
-
-        if turn == 1:
+        if data == 2:
+            self.textBrowser_log.append("Draw! ({})".format(result))
+        elif turn == 1:
             self.textBrowser_log.append("Win! ({})".format(result))
         elif turn == 0:
             self.textBrowser_log.append("Lose! ({})".format(result))
