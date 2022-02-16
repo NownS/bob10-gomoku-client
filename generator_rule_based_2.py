@@ -97,6 +97,7 @@ class Generator:
         two_2 = ['01100', '00110']
         three_6 = ['010110', '011010']
         three_8 = '01110'
+        blocked_three = ['x11100', '00111x', 'x10110', 'x11010', '01101x', '01011x']
         four_8 = ['10111','11011','11101']
         four_10 = ['11110','01111']
         four_50 =  '011110'
@@ -106,6 +107,8 @@ class Generator:
         four_count = 0
         open_three_count = 0
         open_four_count = 0
+        two_count = 0
+        block_three_count = 0
 
         # 양방향으로 체크할것이기 때문에 for문은 4방향.
         for i in range(4):
@@ -116,11 +119,11 @@ class Generator:
                 x_check += moves[i][0]
                 y_check += moves[i][1]
                 if x_check < 0 or x_check >= 15 or y_check < 0 or y_check >= 15:
-                    break
+                    check_pattern = 'x' + check_pattern
 
                 check_xy = board[x_check][y_check]
                 if x_check < 0 or x_check >= 15 or y_check < 0 or y_check >= 15:
-                    break
+                    check_pattern = 'x' + check_pattern
                 if check_xy == color:
                     check_pattern = '1' + check_pattern
                 elif check_xy == BLANK:
@@ -133,11 +136,11 @@ class Generator:
                 x_check -= moves[i][0]
                 y_check -= moves[i][1]
                 if x_check < 0 or x_check >= 15 or y_check < 0 or y_check >= 15:
-                    break
+                    check_pattern = check_pattern + 'x'
 
                 check_xy = board[x_check][y_check]
                 if x_check < 0 or x_check >= 15 or y_check < 0 or y_check >= 15:
-                    break
+                    check_pattern = check_pattern + 'x'
                 if check_xy == color:
                     check_pattern = check_pattern + '1'
                 elif check_xy == BLANK:
@@ -174,13 +177,21 @@ class Generator:
                 if open_four_count == 2 and color == BLACK:
                     return -1
 
+            for three in blocked_three:
+                if three in check_pattern:
+                    weight += 1
+                    block_three_count += 1
+
+
             for two in two_1:
                 if two in check_pattern:
                     weight += 1
+                    two_count += 1
 
             for two in two_2:
                 if two in check_pattern:
                     weight += 2
+                    two_count += 1
 
             for four in four_8:
                 if four in check_pattern:
@@ -198,6 +209,12 @@ class Generator:
             
         if four_count + three_count >= 2:
             weight += 1000
+
+        if four_count and two_count >= 1:
+            weight += 5
+
+        if four_count and block_three_count >= 1:
+            weight += 5
 
         return weight
 
