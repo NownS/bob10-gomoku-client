@@ -64,7 +64,7 @@ class Generator:
             for y in range(15):
                 my_weight = self.calculate_weight(x, y, my_color) + gomoku_default_weight_map[x][y]
                 your_weight = self.calculate_weight(x, y, int(not my_color)) + gomoku_default_weight_map[x][y]
-                
+
                 if my_weight >= 10000:
                     return x,y
                 elif your_weight >= 10000 and my_weight >= 0:
@@ -149,14 +149,10 @@ class Generator:
                 if three in check_pattern and (not ('11101' in check_pattern)) and (not ('10111' in check_pattern)):
                     weight += 6
                     three_count += 1
-                    if three_count >= 2:
-                        weight += 20
 
             if three_8 in check_pattern and (not ('11101' in check_pattern)) and (not ('10111' in check_pattern)):
                 weight += 8
                 three_count += 1
-                if three_count >= 2:
-                    weight += 20
             
             if three_8 in check_pattern:
                 open_three_count += 1
@@ -190,15 +186,18 @@ class Generator:
                 if four in check_pattern:
                     weight += 8
                     four_count += 1
-                    if four_count + three_count > 1:
-                        weight += 1000
 
             for four in four_10:
                 if four in check_pattern:
                     weight += 8
                     four_count += 1
-                    if four_count + three_count > 1:
-                        weight += 1000
+
+            
+        if three_count >= 2:
+            weight += 20
+            
+        if four_count + three_count >= 2:
+            weight += 1000
 
         return weight
 

@@ -7,7 +7,7 @@ from PyQt5 import uic, QtGui
 from gomoku_lib import Gomoku
 from PyQt5.QtCore import *
 import numpy as np
-from generator import Generator
+from generator_rule_based_2 import Generator
 
 form_class = uic.loadUiType("gomoku.ui")[0]
 
@@ -189,11 +189,8 @@ class WindowClass(QMainWindow, form_class) :
     def clickPos(self, event):
         x = event.pos().x()
         y = event.pos().y()
-        print("x, y", x, y)
         x = int((x - 6) / 42 + 1)
         y = int((y - 6) / 42 + 1)
-        print("x:", x)
-        print("y:", y)
         if self.playerTurn:
             self.mysignal.put.emit((x, y))
 
