@@ -172,7 +172,7 @@ class Generator:
                     return 10000
                 else:
                     if '111111' in check_pattern:
-                        continue
+                        pass
                     else:
                         return 10000
 
@@ -186,10 +186,6 @@ class Generator:
                 if three in check_pattern:
                     weight += 1
                     block_three_count += 1
-
-            if three in three_2:
-                weight += 2
-                two_count += 1
 
             for two in two_1:
                 if two in check_pattern and not ('010101' in check_pattern or '101010' in check_pattern):
