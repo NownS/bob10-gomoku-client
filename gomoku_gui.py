@@ -208,7 +208,7 @@ class WindowClass(QMainWindow, form_class) :
     
     def timeout(self):
         sender = self.sender()
-        interval = QTime.currentTime().secsTo(self.time) + 15
+        interval = QTime.currentTime().secsTo(self.time) + 150
 
         if id(sender) == id(self.timer):
             self.label_time.setText(str(interval))
